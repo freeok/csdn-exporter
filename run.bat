@@ -1,24 +1,31 @@
 @echo off
 @title CSDNExporter
 
+@REM 是否批量下载文章
 set download_category="true"
-set download_article="false"
-set userName="Zero___0_0"
+@REM CSDN 用户 ID（非昵称）
+set user_name=your_username
 set start_page=1
-set page_num=100
+set page_num=300
+
+@REM 是否单独下载文章
+set download_article="false"
+set article_url=""
+
+@REM 保存目录
 set markdown_dir=markdown
 set pdf_dir=pdf
-set article_url="https://blog.csdn.net/weixin_57165154/article/details/124131932"
 
+@REM 生成全部专栏链接
 if %download_category% == "true" (
-  echo "Obtain blog directory link: save in userName.txt........"
-  python -u link.py %userName%
+  echo "Get blog directory link: Save in category_links_username.txt..."
+  python -u link.py %user_name%
 )
 
-for /f "tokens=* delims=" %%a in (Zero___0_0_categoty_link.txt) do (
-  @REM echo %%a
-  if %download_category% == "true" (
-      echo "Download a category"
+for /f "tokens=* delims=" %%a in (category_links_%user_name%.txt) do (
+    @REM echo %%a
+    if %download_category% == "true" (
+      echo "Batch download"
       python -u main.py ^
           --category_url %%a ^
           --start_page %start_page% ^
@@ -30,21 +37,8 @@ for /f "tokens=* delims=" %%a in (Zero___0_0_categoty_link.txt) do (
           @REM --to_pdf ^
           @REM --with_title ^
           @REM --rm_cache
-   )
+    )
 )
-
-@REM if %download_article% == "true" (
-@REM   echo "Download an article"
-@REM   python -u main.py ^
-@REM       --article_url %article_url% ^
-@REM       --markdown_dir %markdown_dir% ^
-@REM       --pdf_dir %pdf_dir% 
-@REM       --to_pdf ^
-@REM       --with_title ^
-@REM       --rm_cache ^
-@REM       --combine_together
-@REM       --is_win 1
-@REM )
 
 if %download_article% == "true" (
   echo "Download an article"
@@ -55,4 +49,5 @@ if %download_article% == "true" (
       --rm_cache ^
       --is_win 1
 )
+
 pause
