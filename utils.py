@@ -3,24 +3,24 @@
 # Author: allenmirac ########
 # Date: 2023-06-19 ##########
 #############################
-from bs4 import BeautifulSoup, Tag, NavigableString, Comment
 import os
-from os.path import join, exists
 import re
-import subprocess
-from download_img_queue import Download_img_queue
+from os.path import exists
+
+from bs4 import BeautifulSoup, Tag, NavigableString, Comment
 
 special_characters = {
     "&lt;": "<", "&gt;": ">", "&nbsp": " ",
     "&#8203": "",
 }
 
+
 class Parser(object):
     def __init__(self, html, title, img_queue_downloader, is_win=True):
         self.html = html
         self.soup = BeautifulSoup(html, 'html.parser')
         self.outputs = []
-        title = title.replace('.','').replace(':', ' ') # 文章标题中含有路径相关字符
+        title = title.replace('.', '').replace(':', ' ')  # 文章标题中含有路径相关字符
         self.fig_dir = f'./figures/{title}'
         self.pre = False
         self.equ_inline = False
@@ -36,7 +36,8 @@ class Parser(object):
             self.remove_comment(c)
 
     def recursive(self, soup):
-        if isinstance(soup, Comment): return
+        if isinstance(soup, Comment):
+            return
         elif isinstance(soup, NavigableString):
             for key, val in special_characters.items():
                 soup.string = soup.string.replace(key, val)
@@ -45,7 +46,7 @@ class Parser(object):
             tag = soup.name
             if tag in ['h1', 'h2', 'h3', 'h4', 'h5']:
                 n = int(tag[1])
-                soup.contents.insert(0, NavigableString('#'*n + ' '))
+                soup.contents.insert(0, NavigableString('#' * n + ' '))
                 soup.contents.append(NavigableString('\n'))
             elif tag == 'a' and 'href' in soup.attrs:
                 soup.contents.insert(0, NavigableString('['))
@@ -65,7 +66,7 @@ class Parser(object):
                     else:
                         language = ''
                         for name in ['cpp', 'bash', 'python', 'java']:
-                            if name in ' '.join(list(soup.attrs['class'])): # <code class="prism language-cpp">
+                            if name in ' '.join(list(soup.attrs['class'])):  # <code class="prism language-cpp">
                                 language = name
                     soup.contents.insert(0, NavigableString('\n```{}\n'.format(language)))
                     soup.contents.append(NavigableString('\n```\n'))
@@ -80,7 +81,7 @@ class Parser(object):
             elif tag == 'span':
                 if 'class' in soup.attrs:
                     if ('katex--inline' in soup.attrs['class'] or
-                       'katex--display' in soup.attrs['class']): ## inline math
+                            'katex--display' in soup.attrs['class']):  ## inline math
                         self.equ_inline = True if 'katex--inline' in soup.attrs['class'] else False
                         math_start_sign = '$' if self.equ_inline else '\n\n$$'
                         math_end_sign = '$' if self.equ_inline else '$$\n\n'
@@ -98,15 +99,15 @@ class Parser(object):
                 soup.contents.insert(0, NavigableString('+ '))
                 soup.contents.append(NavigableString('\n'))
             # elif tag == 'blockquote':
-                # soup.contents.insert(0, NavigableString('> '))
+            # soup.contents.insert(0, NavigableString('> '))
             elif tag == 'img':
-                
+
                 src = soup.attrs['src']
                 # print("src=", src)
                 # pattern = r'.*\.png'
 
                 # 使用本地下载的链接
-                if not exists(self.fig_dir): # 博客中有图片的时候才会创建图片目录，只会创建一次
+                if not exists(self.fig_dir):  # 博客中有图片的时候才会创建图片目录，只会创建一次
                     # print("makedir")
                     os.makedirs(self.fig_dir)
                 pattern = r'(.*\..*\?)|(.*\.(png|jpeg|jpg|gif|ico))'
@@ -118,12 +119,12 @@ class Parser(object):
                 else:
                     img_file = result_tuple[1].split('/')[-1].rstrip('?')
                 # img_file = re.findall(pattern, src)[0][0].split('/')[-1].rstrip('?') ## e.g. https://img-blog.csdnimg.cn/20200228210146931.png?
-                
+
                 img_file = os.path.join(self.fig_dir, img_file)
                 img_file = img_file.replace("\\", "/")
                 # img_file = img_file.replace(".", "")
                 # print(img_file)
-                
+
                 # 单线程下载 图片
                 # if self.is_win:
                 #     # download_img_cmd = 'aria2c.exe --file-allocation=none -c -x 10 -s 10 -o {} {}'.format(img_file, src)
@@ -143,8 +144,8 @@ class Parser(object):
                 self.img_queue_downloader.add_task(src, img_file, self.is_win)
 
                 img_name = os.path.basename(img_file)
-                img_dir = '.'+img_file # 在上一级目录
-                self.outputs.append('\n!['+img_name+']('+img_dir+')\n')
+                img_dir = '.' + img_file  # 在上一级目录
+                self.outputs.append('\n![' + img_name + '](' + img_dir + ')\n')
 
                 # 图片直接使用CSDN的链接
                 # code = f'![]({src})'

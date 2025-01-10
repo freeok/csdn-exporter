@@ -1,8 +1,8 @@
-import os
 import subprocess
 import threading
 import time
 from queue import Queue
+
 
 class Aria2Downloader:
     def __init__(self, num_workers=4):
@@ -52,19 +52,22 @@ class Aria2Downloader:
 
         print("All tasks completed.")
 
+
 if __name__ == "__main__":
     downloader = Aria2Downloader(num_workers=10)
     time_start = time.time()
     downloader.start()
-    
+
     # 添加下载任务到队列中，例如：
 
-    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/619d30a6e771448e923644e1936f8032.png#pic_center', './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\619d30a6e771448e923644e1936f8032.png')
-    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/7a1877cec6c24ae583ce510a35ca0ad5.png#pic_center', './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\7a1877cec6c24ae583ce510a35ca0ad5.png')
-    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/dad6f05515474de0a6cbcf308f296e19.png#pic_center', './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\dad6f05515474de0a6cbcf308f296e19.png')
-    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/6d4c26c6949d42ab962bc2815735f991.png', './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\6d4c26c6949d42ab962bc2815735f991.png')
-    # ...
-
+    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/619d30a6e771448e923644e1936f8032.png#pic_center',
+                                      './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\619d30a6e771448e923644e1936f8032.png')
+    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/7a1877cec6c24ae583ce510a35ca0ad5.png#pic_center',
+                                      './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\7a1877cec6c24ae583ce510a35ca0ad5.png')
+    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/dad6f05515474de0a6cbcf308f296e19.png#pic_center',
+                                      './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\dad6f05515474de0a6cbcf308f296e19.png')
+    downloader.generate_markdown_file('https://img-blog.csdnimg.cn/6d4c26c6949d42ab962bc2815735f991.png',
+                                      './【历史上的今天】7_月_6_日：RSA_算法发明人诞生；AR_游戏_Pokémon_GO_发布；Tumblr_创始人出生\\6d4c26c6949d42ab962bc2815735f991.png')
 
     # 等待所有任务完成
     downloader.task_queue.join()
@@ -73,4 +76,4 @@ if __name__ == "__main__":
     downloader.stop()
 
     time_end = time.time()
-    print("Time Consume:", time_end-time_start)
+    print("Time Consume:", time_end - time_start)

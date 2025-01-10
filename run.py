@@ -1,4 +1,3 @@
-import os
 import subprocess
 import time
 
@@ -43,6 +42,5 @@ if download_article:
 print()
 print("----------------------------")
 time_end = time.time()
-print("Total time spent:", time_end-time_start, " !")
+print("Total time spent:", time_end - time_start, " !")
 input("Press any key to continue...")
-
