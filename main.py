@@ -54,16 +54,22 @@ img_queue_downloader = Download_img_queue(download_img_queue, True, num_workers)
 
 
 def html2md(url, md_file, with_title=False, is_win=True):
+    # 章节页
     response = httpx.get(url)
     soup = BeautifulSoup(response.content, 'html.parser', from_encoding="utf-8")
+    # TODO 在此规范化 title
     title = soup.find_all('h1', {'class': 'title-article'})[0].string
-    title = '_'.join(title.replace('*', '').strip().split())  # 使用下划线连接单词
     category = ''
     if soup.find_all('span', {'class': 'tit'}):  # 文章归类
         category = soup.find_all('span', {'class': 'tit'})[0].string
-    time = soup.find_all('span', {'class': 'time'})[0].string
-    match = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', time)
-    time = match.group()
+    # 获取首发时间
+    created_at = soup.select('div.up-time > span')[0].string
+    match = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}', created_at)
+    created_at = match.group()
+    # 获取更新时间
+    updated_at = soup.find_all('span', {'class': 'time'})[0].string
+    match = re.search(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}', updated_at)
+    updated_at = match.group()
     html = ""
     for child in soup.find_all('svg'):
         child.extract()
@@ -75,21 +81,19 @@ def html2md(url, md_file, with_title=False, is_win=True):
 
     global img_queue_downloader
     parser = Parser(html, title, img_queue_downloader, is_win)
-    # print(md_file)
-    # tm.sleep(10)
     with open(md_file, 'w', encoding="utf-8") as f:
         f.write('---\n')
         f.write('title: ' + title + '\n')
-        f.write('data: ' + time + '\n')
+        f.write('create time: ' + created_at + '\n')
+        f.write('update time: ' + updated_at + '\n')
         if category != '':
             f.write('tags: ' + category + '\n')
         f.write('---\n')
-        f.write('\n' + '<meta name="referrer" content="no-referrer" />' + '\n')
     with open(md_file, 'a', encoding="utf-8") as f:
         f.write('{}\n'.format(''.join(parser.outputs)))
 
 
-def generate_pdf(input_md_file, pdf_dir, is_win=True):
+def md2pdf(input_md_file, pdf_dir, is_win=True):
     if not exists(pdf_dir):
         os.makedirs(pdf_dir)
 
@@ -134,13 +138,13 @@ def get_category_article_info(soup):
     h2_tag = soup.find_all('h2', {'class': 'title'})[0]
     for child in h2_tag.children:
         if isinstance(child, NavigableString):
-            title = '_'.join(child.replace('*', '').strip().split())
+            title = ' '.join(child.replace('*', '').strip().split())
             break
     return url, title
 
 
-def download_csdn_category_url(category_url, md_dir, start_page=1, page_num=100, pdf_dir='pdf', to_pdf=False,
-                               is_win=True):
+def download_by_category(category_url, md_dir='markdown', start_page=1, page_num=100, pdf_dir='pdf', to_pdf=False,
+                         is_win=True):
     """
     如果想下载某个 category 下的所有页面, 那么 page_num 设置大一些
     """
@@ -153,28 +157,29 @@ def download_csdn_category_url(category_url, md_dir, start_page=1, page_num=100,
         suffix = '.html' if page == 1 else '_{}.html'.format(page)
         category_url_new = category_url.rstrip('.html') + suffix
         print('Getting Response From {}'.format(category_url_new))
+        # 专栏页
         response = httpx.get(category_url_new)
         soup = BeautifulSoup(response.content, 'html.parser', from_encoding="utf-8")
         article_list = soup.find_all('ul', {'class': 'column_article_list'})[0]
         p = article_list.find_all('p')
         if p and p[0].string == '空空如也':
-            print('No Content in {}, I Will Skip It!'.format(category_url_new))
+            print('Column content is empty, skip {}'.format(category_url_new))
             break
         for child in article_list.children:
-            # if child.name == 'div': # and child.attrs['class'] == 'pagination-box': print(child)
             if child.name == 'li':
                 url, title = get_category_article_info(child)
-                title = re.compile(u"([^\u4e00-\u9fa5\u0030-\u0039\u0041-\u005a\u0061-\u007a])").sub('', title)
                 article_url.append(url)
+                # TODO 在此规范化 title
                 article_title.append(title)
 
     for idx, (url, title) in enumerate(zip(article_url, article_title), 1):
         md_file = join(md_dir, title + '.md')
         print('BlogNum: {}, Exporting Markdown File To {}'.format(idx, md_file))
         if not exists(md_file):
+            # 爬取
             html2md(url, md_file)
             if to_pdf:
-                generate_pdf(md_file, pdf_dir, is_win)
+                md2pdf(md_file, pdf_dir, is_win)
 
 
 def download_csdn_single_page(details_url, md_dir, with_title=True, pdf_dir='pdf', to_pdf=False, is_win=True):
@@ -184,14 +189,14 @@ def download_csdn_single_page(details_url, md_dir, with_title=True, pdf_dir='pdf
     response = httpx.get(details_url)
     soup = BeautifulSoup(response.content, 'html.parser', from_encoding="utf-8")
     title = soup.find_all('h1', {'class': 'title-article'})[0].string  ## 使用 html 的 title 作为 md 文件名
-    title = '_'.join(title.replace('*', '').strip().split())
+    title = ' '.join(title.replace('*', '').strip().split())
     title = title.replace('/', "或")
     # print(title)
     md_file = join(md_dir, title + '.md')
     print('Export Markdown File To {}'.format(md_file))
     html2md(details_url, md_file, with_title=with_title, is_win=is_win)
     if to_pdf:
-        generate_pdf(md_file, pdf_dir, is_win)
+        md2pdf(md_file, pdf_dir, is_win)
 
 
 if __name__ == '__main__':
@@ -209,10 +214,10 @@ if __name__ == '__main__':
         shutil.rmtree(args.pdf_dir)
 
     if args.category_url:
-        download_csdn_category_url(args.category_url,
-                                   args.markdown_dir,
-                                   start_page=args.start_page,
-                                   page_num=args.page_num)
+        download_by_category(args.category_url,
+                             args.markdown_dir,
+                             start_page=args.start_page,
+                             page_num=args.page_num)
         #    pdf_dir=args.pdf_dir,
         #    to_pdf=args.to_pdf)
         # download_csdn_category_url(args.category_url,
@@ -242,7 +247,7 @@ if __name__ == '__main__':
             cmd_line = 'cat {} > {}'.format(source_files, md_file)
         os.system(cmd_line)
         if args.to_pdf:
-            generate_pdf(md_file, args.pdf_dir, is_win)
+            md2pdf(md_file, args.pdf_dir, is_win)
 
     # 启用多线程下载文件
     print("开始多线程下载文件.....")
