@@ -1,7 +1,7 @@
 import os
 
 # 目录路径
-path = './markdown'
+path = '../markdown'
 
 # 获取目录下所有文件及文件夹
 all_files = os.listdir(path)

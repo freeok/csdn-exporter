@@ -19,7 +19,7 @@ set pdf_dir=pdf
 @REM 生成全部专栏链接
 if %download_category% == "true" (
   echo "Get blog directory link: Save in category_links_username.txt..."
-  python -u link.py %user_name%
+  python -u src/link.py %user_name%
 )
 
 for /f "tokens=* delims=" %%a in (category_links_%user_name%.txt) do (

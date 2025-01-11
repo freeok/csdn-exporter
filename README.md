@@ -1,14 +1,17 @@
 # CSDNExporter
+
 ## 介绍
+
 CSDN 博客导出工具, 用于将 CSDN 博客导出为 Markdown / PDF 格式. 比较赞的地方在于, 它
 不仅支持一篇博文的导出, 还支持将某个类目下的博文批量导出, 以及将导出的多篇博文汇总为
 一篇, 以便用于全局搜索, 具体效果可以查看 .
 
 ## 运行脚本
+
 - Linux系统运行
-启动脚本为 `./run.sh`, 使用 `chmod +x run.sh` 增加其可执行权限;(并没有测试)
+  启动脚本为 `./run.sh`, 使用 `chmod +x run.sh` 增加其可执行权限;(并没有测试)
 - Windows系统启动
-启动脚本为`run.bat`, 双击打开或者在cmd中运行`run.bat`。
+  启动脚本为`run.bat`, 双击打开或者在cmd中运行`run.bat`。
 
 ## 修改的地方
 
@@ -21,7 +24,7 @@ def __init__(self, html, title, is_win=True):
     self.html = html
     self.soup = BeautifulSoup(html, 'html.parser')
     self.outputs = []
-    self.fig_dir = f'./figures/{title}'+'.assets'
+    self.fig_dir = f'./figures/{title}' + '.assets'
     self.pre = False
     self.equ_inline = False
     self.is_win = is_win
@@ -35,9 +38,10 @@ recursive(self, soup):
 def recursive(self, soup):
     …………
     elif tag == 'img':
-        if not exists(self.fig_dir): # 博客中有图片的时候才会创建图片目录，只会创建一次
-            os.makedirs(self.fig_dir)
-    …………
+    if not exists(self.fig_dir):  # 博客中有图片的时候才会创建图片目录，只会创建一次
+        os.makedirs(self.fig_dir)
+
+…………
 ```
 
 2、输入用户名就可以直接找到的用户的博客专栏，拿到所有专栏下面的文章
@@ -47,7 +51,7 @@ run.bat 先将所有的categories保存在userName.txt中
 ```bash
 if %download_category% == "true" (
   echo "Obtain blog directory link: save in userName.txt........"
-  python -u link.py %userName%
+  python -u src/link.py %userName%
 )
 ```
 
@@ -76,7 +80,7 @@ for /f "tokens=* delims=" %%a in (m0_67623521.txt) do (
 link.py
 
 ```python
-user = sys.argv[1] # 拿到命令行下的用户名参数
+user = sys.argv[1]  # 拿到命令行下的用户名参数
 ```
 
 将连接写入文件
@@ -87,10 +91,10 @@ for li in lis:
     url = li.find("a").attrs['href']
     title = li.find("span").attrs['title']
     titles.append(title)
-    infos[title] = {"url":url}
+    infos[title] = {"url": url}
 
     # print("[+]"+title+url)
-    with open(user+'.txt','a+') as f:    #设置文件对象
+    with open(user + '.txt', 'a+') as f:  # 设置文件对象
         f.write(url)
         f.write('\n')
 ```
@@ -99,7 +103,7 @@ for li in lis:
 
 另外要说明的是:
 
-0. 安装必要的 Python 库, 如 `httpx`, `requests`, `BeautifulSoup`, `bs4`;
+0. 安装必要的 Python 库, 如 `httpx`, `requests`, `beautifulsoup4`;
 1. 为了解析图片链接, 需要安装 [aria2](https://aria2.github.io/), 并保证能在命令行启动;
 2. 为了转换为 PDF, 需要安装 [Pandoc](https://pandoc.org/)，(博主该功能我并没有测试)。
 3. 该博客导出工具再我的需求下就是拿到md文件，现在的功能我还是比较满意
@@ -128,21 +132,22 @@ for li in lis:
 
 1、获取作者的作用文章
 
-
-打开作者主页，看到浏览器上面的链接框，比如：https://blog.csdn.net/m0_67623521?type=blog， 这样就可以把m0_67623521用户名提取出来，然后修改run.py，新建userName.txt，用于保存目录链接，之后就会自动下载博客，并且下载图片保存下来
+打开作者主页，看到浏览器上面的链接框，比如：https://blog.csdn.net/m0_67623521?type=blog，
+这样就可以把m0_67623521用户名提取出来，然后修改run.py，新建userName.txt，用于保存目录链接，之后就会自动下载博客，并且下载图片保存下来
 
 此时：
+
 ```python
 download_category = True
 download_article = False
 ```
-
 
 2、获取一篇文章
 
 直接修改run.py的article_url 改为你要获取的文章，
 
 此时：
+
 ```python
 download_category = True
 download_article = False

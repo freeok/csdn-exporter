@@ -8,7 +8,7 @@ download_article = False
 userName = "java_t_t"
 start_page = 1
 page_num = 100
-markdown_dir = "markdown"
+markdown_dir = "../markdown"
 pdf_dir = "pdf"
 article_url = "https://blog.csdn.net/weixin_57165154/article/details/124131932"
 

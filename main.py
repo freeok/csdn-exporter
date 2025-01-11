@@ -14,8 +14,8 @@ from queue import Queue
 import httpx
 from bs4 import BeautifulSoup, NavigableString
 
-from download_img_queue import Download_img_queue
-from utils import Parser
+from src.download_img_queue import Download_img_queue
+from src.utils import Parser
 
 # 使用argparse库创建了一个命令行参数解析器，并定义了多个命令行参数
 parser = argparse.ArgumentParser('CSDN Blog Exporter: To Markdown or To PDF')
