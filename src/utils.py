@@ -61,7 +61,7 @@ class Parser(object):
                 self.pre = True
             elif tag in ['code', 'tt']:
                 if self.pre:
-                    if not 'class' in soup.attrs:
+                    if 'class' not in soup.attrs:
                         language = 'bash'  # default language
                     else:
                         language = ''
@@ -97,8 +97,10 @@ class Parser(object):
             elif tag in ['li']:
                 soup.contents.insert(0, NavigableString('+ '))
                 soup.contents.append(NavigableString('\n'))
-            # elif tag == 'blockquote':
-            # soup.contents.insert(0, NavigableString('> '))
+            elif tag == 'blockquote':
+                # 确保内容前加上 '> '，并保持原有内容的文本
+                blockquote_text = ''.join(str(c) for c in soup.contents).strip()
+                soup.contents = [NavigableString(f'> {blockquote_text}\n')]
             elif tag == 'img':
                 src = soup.attrs['src']
                 # 使用本地下载的链接
