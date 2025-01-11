@@ -69,14 +69,13 @@ class Parser(object):
                             if name in ' '.join(list(soup.attrs['class'])):  # <code class="prism language-cpp">
                                 language = name
                     soup.contents.insert(0, NavigableString('\n```{}\n'.format(language)))
-                    soup.contents.append(NavigableString('\n```\n'))
+                    soup.contents.append(NavigableString('```\n'))
                     self.pre = False  # assume the contents of <pre> contain only one <code>
                 else:
                     soup.contents.insert(0, NavigableString('`'))
                     soup.contents.append(NavigableString('`'))
             elif tag == 'p':
                 if soup.parent.name != 'li':
-                    # print(soup.parent)
                     soup.contents.insert(0, NavigableString('\n'))
             elif tag == 'span':
                 if 'class' in soup.attrs:
@@ -101,29 +100,19 @@ class Parser(object):
             # elif tag == 'blockquote':
             # soup.contents.insert(0, NavigableString('> '))
             elif tag == 'img':
-
                 src = soup.attrs['src']
-                # print("src=", src)
-                # pattern = r'.*\.png'
-
                 # 使用本地下载的链接
                 if not exists(self.fig_dir):  # 博客中有图片的时候才会创建图片目录，只会创建一次
-                    # print("makedir")
                     os.makedirs(self.fig_dir)
                 pattern = r'(.*\..*\?)|(.*\.(png|jpeg|jpg|gif|ico))'
-                # print(re.findall(pattern, src))
                 result_tuple = re.findall(pattern, src)[0]
-                # print(result_tuple)
                 if result_tuple[0]:
                     img_file = result_tuple[0].split('/')[-1].rstrip('?')
                 else:
                     img_file = result_tuple[1].split('/')[-1].rstrip('?')
-                # img_file = re.findall(pattern, src)[0][0].split('/')[-1].rstrip('?') ## e.g. https://img-blog.csdnimg.cn/20200228210146931.png?
 
                 img_file = os.path.join(self.fig_dir, img_file)
                 img_file = img_file.replace("\\", "/")
-                # img_file = img_file.replace(".", "")
-                # print(img_file)
 
                 # 单线程下载 图片
                 # if self.is_win:
@@ -147,7 +136,7 @@ class Parser(object):
                 img_dir = '.' + img_file  # 在上一级目录
                 self.outputs.append('\n![' + img_name + '](' + img_dir + ')\n')
 
-                # 图片直接使用CSDN的链接
+                # 图片直接使用 CSDN 的链接
                 # code = f'![]({src})'
                 # self.outputs.append('\n' + code + '\n')
                 return
@@ -157,7 +146,6 @@ class Parser(object):
 
 
 if __name__ == '__main__':
-    # html = '<body><!-- cde --><h1>This is 1 &lt;= 2<!-- abc --> <b>title</b></h1><p><a href="www.hello.com">hello</a></p><b>test</b>'
     html = '<body><!-- cde --><h1>hello</h1><h2>world</h2></body>'
-    parser = Parser(html)
+    parser = Parser(html, '', None)
     print(''.join(parser.outputs))
