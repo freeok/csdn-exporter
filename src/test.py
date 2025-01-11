@@ -76,4 +76,4 @@ if __name__ == "__main__":
     downloader.stop()
 
     time_end = time.time()
-    print("Time Consume:", time_end - time_start)
+    print(f"Time taken: {time_end - time_start:.2f} s")

@@ -90,7 +90,7 @@ def html2md(url, md_file, with_title=False, is_win=True):
             f.write('tags: ' + category + '\n')
         f.write('---\n')
     with open(md_file, 'a', encoding="utf-8") as f:
-        f.write('{}\n'.format(''.join(parser.outputs)))
+        f.write(f"{''.join(parser.outputs)}")
 
 
 def md2pdf(input_md_file, pdf_dir, is_win=True):
@@ -260,4 +260,4 @@ if __name__ == '__main__':
     img_queue_downloader.stop()
     print("下载文件结束!!!")
     time_end = tm.time()
-    print("Time consume: ", time_end - time_start)
+    print(f"Time taken: {time_end - time_start:.2f} s")
