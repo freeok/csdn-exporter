@@ -14,7 +14,7 @@ from queue import Queue
 import httpx
 from bs4 import BeautifulSoup, NavigableString
 
-from src.download_img_queue import Download_img_queue
+from src.download_img_queue import download_img_queue
 from src.utils import Parser
 
 # 使用argparse库创建了一个命令行参数解析器，并定义了多个命令行参数
@@ -48,9 +48,8 @@ parser.add_argument('--combine_together', action='store_true',
 args = parser.parse_args()  # 保存命令行参数
 
 # 图片下载队列
-download_img_queue = Queue()
-num_workers = 5
-img_queue_downloader = Download_img_queue(download_img_queue, True, num_workers)
+img_queue = Queue()
+img_downloader = download_img_queue(img_queue, True, 5)
 
 
 def html2md(url, md_file, with_title=False, is_win=True):
@@ -79,8 +78,8 @@ def html2md(url, md_file, with_title=False, is_win=True):
     for c in soup.find_all('div', {'id': 'content_views'}):
         html += str(c)
 
-    global img_queue_downloader
-    parser = Parser(html, title, img_queue_downloader, is_win)
+    global img_downloader
+    parser = Parser(html, title, img_downloader, is_win)
     with open(md_file, 'w', encoding="utf-8") as f:
         f.write('---\n')
         f.write('title: ' + title + '\n')
@@ -174,7 +173,7 @@ def download_by_category(category_url, md_dir='markdown', start_page=1, page_num
 
     for idx, (url, title) in enumerate(zip(article_url, article_title), 1):
         md_file = join(md_dir, title + '.md')
-        print('BlogNum: {}, Exporting Markdown File To {}'.format(idx, md_file))
+        print('Blog {}, Exporting Markdown File To {}'.format(idx, md_file))
         if not exists(md_file):
             # 爬取
             html2md(url, md_file)
@@ -183,7 +182,6 @@ def download_by_category(category_url, md_dir='markdown', start_page=1, page_num
 
 
 def download_csdn_single_page(details_url, md_dir, with_title=True, pdf_dir='pdf', to_pdf=False, is_win=True):
-    print(md_dir)
     if not exists(md_dir):
         os.makedirs(md_dir)
     response = httpx.get(details_url)
@@ -191,9 +189,8 @@ def download_csdn_single_page(details_url, md_dir, with_title=True, pdf_dir='pdf
     title = soup.find_all('h1', {'class': 'title-article'})[0].string  ## 使用 html 的 title 作为 md 文件名
     title = ' '.join(title.replace('*', '').strip().split())
     title = title.replace('/', "或")
-    # print(title)
     md_file = join(md_dir, title + '.md')
-    print('Export Markdown File To {}'.format(md_file))
+    print('Exporting Markdown File To {}'.format(md_file))
     html2md(details_url, md_file, with_title=with_title, is_win=is_win)
     if to_pdf:
         md2pdf(md_file, pdf_dir, is_win)
@@ -214,29 +211,10 @@ if __name__ == '__main__':
         shutil.rmtree(args.pdf_dir)
 
     if args.category_url:
-        download_by_category(args.category_url,
-                             args.markdown_dir,
-                             start_page=args.start_page,
-                             page_num=args.page_num)
-        #    pdf_dir=args.pdf_dir,
-        #    to_pdf=args.to_pdf)
-        # download_csdn_category_url(args.category_url,
-        #                            args.markdown_dir,
-        #                            start_page=args.start_page,
-        #                            page_num=args.page_num,
-        #                            pdf_dir=args.pdf_dir,
-        #                            to_pdf=args.to_pdf)
+        download_by_category(args.category_url, args.markdown_dir, start_page=args.start_page, page_num=args.page_num)
     else:
-        download_csdn_single_page(args.article_url,
-                                  args.markdown_dir,
-                                  with_title=args.with_title)
-        #  pdf_dir=args.pdf_dir,
-        #  to_pdf=args.to_pdf)
-        # download_csdn_single_page(args.article_url,
-        #                           args.markdown_dir,
-        #                           with_title=args.with_title,
-        #                           pdf_dir=args.pdf_dir,
-        #                           to_pdf=args.to_pdf)
+        download_csdn_single_page(args.article_url, args.markdown_dir, with_title=args.with_title)
+
     is_win = args.is_win == 1
     if args.combine_together:
         source_files = join(args.markdown_dir, '*.md')
@@ -251,13 +229,9 @@ if __name__ == '__main__':
 
     # 启用多线程下载文件
     print("开始多线程下载文件.....")
-    # print("img_queue_downloader.task_queue: ")    # 不能取消注释，否则队列里面的东西会全部拿出来
-    # while not img_queue_downloader.task_queue.empty():
-    #     item = img_queue_downloader.task_queue.get()
-    #     print(item)
-    img_queue_downloader.start()
-    img_queue_downloader.task_queue.join()
-    img_queue_downloader.stop()
+    img_downloader.start()
+    img_downloader.task_queue.join()
+    img_downloader.stop()
     print("下载文件结束!!!")
     time_end = tm.time()
     print(f"Time taken: {time_end - time_start:.2f} s")

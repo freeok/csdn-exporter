@@ -1,8 +1,6 @@
 import subprocess
 import time
 
-# Zero___0_0
-# java_t_t
 download_category = True
 download_article = False
 userName = "java_t_t"

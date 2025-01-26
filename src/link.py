@@ -4,12 +4,6 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 
-
-def printk(value):
-    print(value)
-    exit()
-
-
 user_name = sys.argv[1]
 
 url = "https://blog.csdn.net/{}".format(user_name)

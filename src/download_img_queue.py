@@ -4,7 +4,7 @@ import threading
 import requests
 
 
-class Download_img_queue(object):
+class download_img_queue(object):
     def __init__(self, task_queue, is_win=True, num_workers=5):
         self.task_queue = task_queue
         self.headers = {  # headers是请求头，"User-Agent"、"Accept"等字段可通过谷歌Chrome浏览器查找！
@@ -16,10 +16,8 @@ class Download_img_queue(object):
         self.is_win = is_win
 
     def worker(self):
-        # print("Worker......")
         while True:
             task = self.task_queue.get()
-            # print("Queue get......")
             if task is None:
                 break
 
@@ -29,18 +27,6 @@ class Download_img_queue(object):
             self.task_queue.task_done()
 
     def download_image(self, url, save_path, is_win):
-        # download_cmd = "aria2c --file-allocation=none -c -x 10 -s 10 -o {} {}".format(save_path, url)
-        # os.system(download_cmd)
-        # print(url, " is downloading......")
-
-        # # 使用aria2
-        # if is_win:
-        #     download_img_cmd = 'aria2c.exe --file-allocation=none -c -x 10 -s 10 -o {} {}'.format(save_path, url)
-        # else:
-        #     download_img_cmd = 'aria2c --file-allocation=none -c -x 10 -s 10 -o {} {}'.format(save_path, url)
-        # if not os.path.exists(save_path):
-        #     subprocess.run(download_img_cmd, shell=True)
-
         # 使用request
         try:
             pic = requests.get(url, headers=self.headers)
@@ -68,5 +54,3 @@ class Download_img_queue(object):
 
         for t in self.workers:
             t.join()
-
-        print("All tasks completed.")

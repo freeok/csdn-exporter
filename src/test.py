@@ -15,8 +15,6 @@ class Aria2Downloader:
         print(url, " is downloading......")
         download_cmd = ["aria2c", "--file-allocation=none", "-c", "-x", "10", "-s", "10", "-o", save_path, url]
         subprocess.run(download_cmd)
-        # print('download_cmd=124')
-        # time.sleep(2)
 
     def worker(self):
         while True:
@@ -32,7 +30,6 @@ class Aria2Downloader:
 
     def generate_markdown_file(self, url, save_path):
         # 生成 Markdown 文件的逻辑
-        # ...
         print("Is downloading......")
         with self.task_lock:
             self.task_queue.put((url, save_path))

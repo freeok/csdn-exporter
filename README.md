@@ -21,15 +21,15 @@ utils.py 增加了一个参数title
 
 ```python
 def __init__(self, html, title, is_win=True):
-    self.html = html
-    self.soup = BeautifulSoup(html, 'html.parser')
-    self.outputs = []
-    self.fig_dir = f'./figures/{title}' + '.assets'
-    self.pre = False
-    self.equ_inline = False
-    self.is_win = is_win
+  self.html = html
+  self.soup = BeautifulSoup(html, 'html.parser')
+  self.outputs = []
+  self.fig_dir = f'./figures/{title}' + '.assets'
+  self.pre = False
+  self.equ_inline = False
+  self.is_win = is_win
 
-    self.recursive(self.soup)
+  self.parse(self.soup)
 ```
 
 recursive(self, soup):

@@ -26,7 +26,7 @@ class Parser(object):
         self.equ_inline = False
         self.is_win = is_win
         self.img_queue_downloader = img_queue_downloader
-        self.recursive(self.soup)
+        self.parse(self.soup)
 
     def remove_comment(self, soup):
         if not hasattr(soup, 'children'): return
@@ -35,7 +35,7 @@ class Parser(object):
                 c.extract()
             self.remove_comment(c)
 
-    def recursive(self, soup):
+    def parse(self, soup):
         if isinstance(soup, Comment):
             return
         elif isinstance(soup, NavigableString):
@@ -84,7 +84,6 @@ class Parser(object):
                         self.equ_inline = True if 'katex--inline' in soup.attrs['class'] else False
                         math_start_sign = '$' if self.equ_inline else '\n\n$$'
                         math_end_sign = '$' if self.equ_inline else '$$\n\n'
-                        # equation = soup.find_all('annotation', {'encoding': 'application/x-tex'})[0].string
                         equation = soup.find_all('span', {'class': 'katex-mathml'})[0].string
                         equation = equation.strip().split('\n')[-1].strip()
                         equation = math_start_sign + str(equation) + math_end_sign
@@ -144,10 +143,4 @@ class Parser(object):
                 return
         if not hasattr(soup, 'children'): return
         for child in soup.children:
-            self.recursive(child)
-
-
-if __name__ == '__main__':
-    html = '<body><!-- cde --><h1>hello</h1><h2>world</h2></body>'
-    parser = Parser(html, '', None)
-    print(''.join(parser.outputs))
+            self.parse(child)
